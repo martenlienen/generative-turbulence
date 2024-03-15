@@ -1,0 +1,53 @@
+#!/bin/sh
+
+cd ${0%/*} || exit 1
+
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions
+
+# A simplified version of the original runParallel helper that also passes the
+# --oversubscribe option to mpirun. This way, OpenFOAM does not stop if someone else on
+# the cluster uses more CPUs than they should and OpenMPI sees fewer free ones than we
+# request.
+runParallel()
+{
+  # Any additional parsed arguments (eg, decomposeParDict)
+  local appArgs="-parallel"
+  local mpirun="mpirun"
+  local appRun="$1"
+  local nProcs=$(getNumberOfProcessors system/decomposeParDict)
+  local appName="${appRun##*/}"
+  local logFile="log.$appName$logFile"
+
+  if [ -f "$logFile" ]
+  then
+    echo "$appName already run on $PWD:" \
+         "remove log file '$logFile' to re-run"
+  else
+    echo "Running $appRun ($nProcs processes) on $PWD "
+    $mpirun --oversubscribe -n $nProcs $appRun $appArgs </dev/null >> $logFile 2>&1
+  fi
+}
+
+runApplication blockMesh
+
+# Use potential flow as initial condition
+runApplication potentialFoam -writep
+
+if [ $(getNumberOfProcessors) -gt 1 ]; then
+  runApplication decomposePar -force
+
+  runParallel $(getApplication)
+
+  # Delete redundant previous-step data
+  find . -name "*_0" -delete
+
+  runApplication ./parReconstructPar
+
+  # Delete distributed results
+  rm -r processor*
+else
+  runApplication $(getApplication)
+
+  # Delete redundant previous-step data
+  find . -name "*_0" -delete
+fi

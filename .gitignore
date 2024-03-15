@@ -1,0 +1,17 @@
+# Python artifacts
+__pycache__
+*.egg-info
+
+# ML stuff
+/data
+/logs
+/test_samples
+wandb
+.hydra
+outputs
+multirun
+lightning_logs
+.ipynb_checkpoints/
+
+# brezn
+.brezn

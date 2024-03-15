@@ -1,0 +1,9 @@
+defaults:
+  - shapes
+
+name: shapes-seq
+
+context_window: ${model.context_window}
+unroll_steps: ${model.unroll_steps}
+eval_unroll_steps: ${model.eval_unroll_steps}
+stride: 1

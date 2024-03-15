@@ -1,0 +1,41 @@
+name: diffusion
+
+batch_size: 6
+eval_batch_size: 8
+
+monitor: val/tke
+
+dim: 32
+normalization_mode: u:norm-max;p:abs-max
+variables: u,p
+beta_schedule: log-snr-linear
+timesteps: 500
+
+lr_decay: exp
+learning_rate: 1e-4
+min_learning_rate: 1e-6
+max_epochs: 10
+
+loss: l2
+learned_variances: no
+elbo_weight: 1e-1
+detach_elbo_mean: yes
+clip_denoised: no
+noise_bcs: yes
+time_embedding: nyquist
+actfn: silu
+optimizer: radam
+norm_type: group
+
+with_geometry_embedding: no
+
+cell_type_features: yes
+cell_type_embedding_type: learned
+cell_type_embedding_dim: 4
+cell_pos_features: no
+
+shapes_data: shapes
+shapes_batch_size: 6
+shapes_eval_batch_size: 8
+shapes_max_epochs: 10
+shapes_discard_first: 0.025

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Reconstruct the time steps in parallel
+foamListTimes -processor | xargs -P 8 -n 1 reconstructPar -newTimes -time

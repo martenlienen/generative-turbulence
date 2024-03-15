@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+  format ascii;
+  class dictionary;
+  location "system";
+  object fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+  p
+  {
+    solver GAMG;
+    smoother GaussSeidel;
+    tolerance 1e-06;
+    relTol 0.1;
+  }
+
+  pFinal
+  {
+    $p;
+    smoother DICGaussSeidel;
+    relTol 0;
+  }
+
+  "(U|k)"
+  {
+    solver smoothSolver;
+    smoother GaussSeidel;
+    tolerance 1e-05;
+    relTol 0.1;
+  }
+
+  "(U|k)Final"
+  {
+    $U;
+    relTol 0;
+  }
+
+  // Taken from the tutorial case "basic/potentialFoam/cylinder"
+  Phi
+  {
+    solver GAMG;
+    smoother DIC;
+    tolerance 1e-06;
+    relTol 0.01;
+  }
+}
+
+PIMPLE
+{
+  // Only a single outer corrector to make this equivalent to the PISO solver, just with
+  // automatic time step control. Since we want to resolve the turbulence accurately, we
+  // pick small time steps anyway and ignore the usual strength, large time steps, of the
+  // PIMPLE solver.
+  nOuterCorrectors 1;
+
+  // Our hexahedral grid cells are perfectly orthogonal, so we do not need this
+  nNonOrthogonalCorrectors 0;
+
+  // These values are recommended in http://www.wolfdynamics.com/wiki/tipsandtricks.pdf
+  nCorrectors 3;
+  turbOnFinalIterOnly false;
+}
+
+potentialFlow
+{
+  // Our hexahedral grid cells are perfectly orthogonal, so we do not need this
+  nNonOrthogonalCorrectors 0;
+}
+
+// ************************************************************************* //

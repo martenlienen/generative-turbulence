@@ -1,0 +1,10 @@
+hydra_logging:
+  formatters:
+    simple:
+      datefmt: "%H:%M:%S"
+
+job_logging:
+  formatters:
+    simple:
+      format: "[%(asctime)s][%(name)s][%(levelname)s] %(message)s"
+      datefmt: "%H:%M:%S"

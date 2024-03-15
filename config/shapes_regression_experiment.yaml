@@ -1,0 +1,63 @@
+defaults:
+  - hydra: default
+  - model: dilresnet
+  - data: shapes-seq
+  - override hydra/launcher: slurm
+  - _self_
+
+hydra:
+  job:
+    name: ${wandb.group}
+
+  launcher:
+    # 2 days
+    timeout_min: 2880
+
+  sweeper:
+    params:
+      data.stride: 1,2,4,8,12,16,20,24,28,32,64,96,128,160
+
+model:
+  batch_size: 3
+  eval_batch_size: 1
+
+  eval_unroll_steps: ${eval:"max(int(100 / ${data.stride}), 1)"}
+  sample_steps:
+    - ${model.main_sample_step}
+  main_sample_step: ${eval:"max(int(25 / ${data.stride}) - 1, 0)"}
+
+  max_epochs: 2
+
+  compute_expensive_sample_metrics: no
+
+data:
+  # Train regression models also on the build-up phase
+  discard_first: ${if_eq:${model.name},"diffusion",0.025,-1}
+
+wandb:
+  id: ~
+  entity: ~
+  project: turbdiff
+  group: shapes-regression
+  mode: ~
+  name: ${model.name}-stride:${data.stride}
+
+trainer:
+  _target_: pytorch_lightning.Trainer
+  accelerator: gpu
+  devices: 1
+  max_epochs: ${model.max_epochs}
+  log_every_n_steps: 5
+  check_val_every_n_epoch: 1
+  gradient_clip_val: 0.1
+  gradient_clip_algorithm: norm
+  num_sanity_val_steps: 0
+
+seed: 167094162286560306248057117774580016151
+eval_testset: yes
+
+monitor: val/tke
+
+matmul_precision: medium
+
+samples_root: "data/samples"

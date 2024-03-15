@@ -1,0 +1,91 @@
+[build-system]
+requires = ["flit_core >=3.7,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "turbdiff"
+dynamic = ["version", "description"]
+authors = [
+  {name = "Authors", email = "author@example.com"},
+]
+dependencies = [
+  # PyTorch etc.
+  "torch ~= 2.0",
+  "pytorch-lightning ~= 2.0",
+  "torchmetrics",
+  "einops",
+
+  # Optimal transport
+  "POT ~= 0.9",
+
+  # OpenFOAM utilities
+  "fluidfoam",
+  "ofblockmeshdicthelper",
+  "PyYAML",
+
+  # Parser combinator for our own OpenFOAM dict parser
+  "lark",
+
+  # Data formats
+  "h5py",
+
+  # General science & ml
+  "numpy",
+  "scipy",
+  "pandas",
+  "numgrid",
+
+  # Plotting & visualization
+  "matplotlib",
+  "Pillow",
+
+  # hydra & logging
+  "hydra-core ~= 1.3",
+  "hydra-submitit-launcher",
+  "wandb ~= 0.16",
+
+  # Utilities
+  "joblib",
+  "deadpool-executor",
+  "loky",
+  "cachetools",
+  "more-itertools",
+  "tqdm",
+  "rich",
+  "ipython",
+  "ipdb",
+  "jupyterlab",
+  "ipympl",
+  "pytimeparse",
+]
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+data = ["udocker", "pycurl"]
+3d = ["pyvista", "trame-vuetify", "trame-vtk"]
+
+[tool.isort]
+profile = "black"
+known_third_party = ["wandb"]
+
+[tool.black]
+line-length = 90
+
+[tool.ruff]
+line-length = 90
+
+[tool.brezn]
+files = [
+  "train.py",
+  "turbdiff.mplstyle",
+  "/turbdiff",
+  "/config",
+  "/scripts",
+]
+symlinks = [
+  "data/",
+  "wandb/",
+  "multirun/",
+  "outputs/",
+]

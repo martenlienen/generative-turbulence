@@ -1,0 +1,12 @@
+name: shapes
+
+root: data/shapes
+discard_first_seconds: 0.025
+num_workers: 8
+batch_size: ${model.batch_size}
+eval_batch_size: ${model.eval_batch_size}
+val_samples: 8
+test_samples: 16
+pin_memory: yes
+
+variables: ${model.variables}

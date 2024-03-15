@@ -1,0 +1,44 @@
+defaults:
+  - hydra: default
+  - data: shapes
+  - _self_
+  - model: diffusion
+
+seed: ~
+eval_testset: no
+
+wandb:
+  id: ~
+  entity: ~
+  project: turbdiff
+  group: explore
+  mode: ~
+  name: ~
+
+hydra:
+  job:
+    name: ${wandb.group}
+
+trainer:
+  _target_: pytorch_lightning.Trainer
+  accelerator: gpu
+  devices: 1
+  max_epochs: -1
+  log_every_n_steps: 5
+  # Set a high default value so that we don't run validation during time limited training
+  check_val_every_n_epoch: 100
+  gradient_clip_val: 0.1
+  gradient_clip_algorithm: norm
+  num_sanity_val_steps: 0
+
+restart_from: ~
+
+monitor: ${model.monitor}
+early_stopping: ~
+train_limit: 24h
+
+# Enable once it works for python 3.11
+compile: ~
+matmul_precision: high
+
+samples_root: "data/samples"

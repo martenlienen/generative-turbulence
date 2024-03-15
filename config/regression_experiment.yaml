@@ -1,0 +1,60 @@
+defaults:
+  - hydra: default
+  - data: regression
+  - model: dilresnet
+  - override hydra/launcher: slurm
+  - _self_
+
+hydra:
+  job:
+    name: ${wandb.group}
+
+  launcher:
+    # 12h
+    timeout_min: 720
+
+  sweeper:
+    params:
+      data.dims: 2,3
+      data.inflow: "'1.800','4.400','7.000','9.600','12.200','14.800','17.400','20.000'"
+      data.stride: 1,2,4,8,16,24,32
+
+# Don't specify seed to get a random one for each setting
+seed: ~
+eval_testset: yes
+
+model:
+  batch_size: ${if_eq:${model.name},"dilresnet",${if_eq:${data.dims},3,1,8},${if_eq:${data.dims},3,2,16}}
+  eval_batch_size: ${if_eq:${model.name},"dilresnet",${if_eq:${data.dims},3,1,16},${if_eq:${data.dims},3,4,16}}
+
+  # Use the first step where correlation drops below our threshold as new samples
+  eval_unroll_steps: ${eval:"int(100 / ${data.stride})"}
+  sample_steps:
+    - ${model.main_sample_step}
+  main_sample_step: ${eval:"int(21 / ${data.stride}) - 1"}
+
+  compute_expensive_sample_metrics: no
+
+wandb:
+  id: ~
+  entity: ~
+  project: turbdiff
+  group: regression
+  mode: ~
+  name: ${model.name}-${data.dims}d-u:${data.inflow}-stride:${data.stride}
+
+trainer:
+  _target_: pytorch_lightning.Trainer
+  accelerator: gpu
+  devices: 1
+  max_epochs: -1
+  log_every_n_steps: 5
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 0
+
+monitor: val/loss
+train_limit: ${if_eq:${data.dims},2,"1h","8h"}
+
+matmul_precision: high
+
+samples_root: "data/samples"

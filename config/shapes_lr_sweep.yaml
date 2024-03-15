@@ -1,0 +1,57 @@
+defaults:
+  - hydra: default
+  - model: diffusion
+  - data: shapes
+  - override hydra/launcher: slurm
+  - _self_
+
+hydra:
+  job:
+    name: ${wandb.group}
+
+  launcher:
+    # 1 day
+    timeout_min: 1440
+
+  sweeper:
+    params:
+      model.learning_rate: 1e-3,1e-4,1e-5
+      model.min_learning_rate: 1e-3,1e-4,1e-5,1e-6
+
+model:
+  batch_size: 6
+  eval_batch_size: 8
+
+  max_epochs: 10
+
+data:
+  # Train regression models also on the build-up phase
+  discard_first: ${if_eq:${model.name},"diffusion",0.025,-1}
+
+wandb:
+  id: ~
+  entity: ~
+  project: turbdiff
+  group: shapes-lr-sweep
+  mode: ~
+  name: ${model.name}-lr:${model.learning_rate}-lr:${model.min_learning_rate}
+
+trainer:
+  _target_: pytorch_lightning.Trainer
+  accelerator: gpu
+  devices: 1
+  max_epochs: 2
+  log_every_n_steps: 5
+  check_val_every_n_epoch: ${.max_epochs}
+  gradient_clip_val: 0.1
+  gradient_clip_algorithm: norm
+  num_sanity_val_steps: 0
+
+seed: 139147273689317577152733398403875314882
+eval_testset: no
+
+monitor: val/tke
+
+matmul_precision: medium
+
+samples_root: "data/samples"

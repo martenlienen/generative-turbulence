@@ -1,0 +1,33 @@
+name: dilresnet
+
+batch_size: 3
+eval_batch_size: 8
+context_window: 1
+unroll_steps: 1
+eval_unroll_steps: 30
+sample_steps: []
+main_sample_step: -1
+
+monitor: val/loss
+
+normalization_mode: u:norm-max;p:abs-max
+variables: u,p
+cell_type_features: yes
+cell_type_embedding_type: learned
+cell_type_embedding_dim: 8
+cell_pos_features: no
+
+learning_rate: 1e-3
+min_learning_rate: 1e-6
+max_epochs: 4
+N: 4
+hidden_dim: 48
+training_noise_std: 1e-3
+
+compute_expensive_sample_metrics: yes
+
+shapes_data: shapes-seq
+shapes_batch_size: 3
+shapes_eval_batch_size: 4
+shapes_max_epochs: 4
+shapes_discard_first: -1

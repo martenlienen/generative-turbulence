@@ -1,0 +1,31 @@
+name: tfnet
+
+batch_size: 8
+eval_batch_size: 16
+context_window: 6
+unroll_steps: 4
+eval_unroll_steps: 30
+sample_steps: []
+main_sample_step: -1
+
+monitor: val/loss
+
+normalization_mode: u:norm-max;p:abs-max
+variables: u,p
+cell_type_features: yes
+cell_type_embedding_type: learned
+cell_type_embedding_dim: 8
+cell_pos_features: no
+
+temporal_filtering_length: 4
+learning_rate: 1e-3
+dropout_rate: 0.0
+kernel_size: 3
+
+compute_expensive_sample_metrics: yes
+
+shapes_data: shapes-seq
+shapes_batch_size: 6
+shapes_eval_batch_size: 4
+shapes_max_epochs: 2
+shapes_discard_first: -1

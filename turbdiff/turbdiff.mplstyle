@@ -1,0 +1,10 @@
+# HiDPI figures by default
+figure.dpi: 142
+
+axes.labelsize: xx-small
+axes.labelpad: 1
+xtick.labelsize: xx-small
+xtick.major.pad: 1
+ytick.labelsize: xx-small
+ytick.major.pad: 1
+legend.fontsize: xx-small

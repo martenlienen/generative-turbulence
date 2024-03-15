@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: © 2024 Marten Lienen <m.lienen@tum.de> & Technical University of Munich
+#
+# SPDX-License-Identifier: MIT
+
+config: header (assignment | comment)*
+header: comment "FoamFile" dict comment
+?comment: LINE_COMMENT | BLOCK_COMMENT
+LINE_COMMENT: /\/\/[^\n]*/
+BLOCK_COMMENT: /\/\*.*?\*\//s
+assignment: IDENTIFIER (dict | (annotated_value ";"))
+units: "[" SIGNED_INT* "]"
+dict: "{" assignment* "}"
+?annotated_value: field | unit_value | units | value
+unit_value: units value
+value: list | scalar
+field: UNIFORMITY value
+UNIFORMITY: "uniform" | "nonuniform"
+?scalar: SIGNED_NUMBER | IDENTIFIER | ESCAPED_STRING
+IDENTIFIER: /[a-zA-Z]+/
+?list: simple_list | numbered_list | token_list
+simple_list: "(" SIGNED_NUMBER+ ")"
+numbered_list: INT simple_list
+token_list: "List<" IDENTIFIER ">" numbered_list
+
+%import common.ESCAPED_STRING
+%import common.SIGNED_NUMBER
+%import common.SIGNED_INT
+%import common.INT
+%import common.WS
+%ignore WS
