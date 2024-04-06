@@ -28,8 +28,8 @@ def main():
     for scale in [0.5, 1, 1.5, 2, 4]:
         scale_config = base_config.refine(scale)
         n = scale_config.n[-1]
-        generate_case(root / str(n) / "3d", scale_config)
-        generate_case(root / str(n) / "2d", scale_config.to_2d())
+        generate_case(root / str(n) / "3d" / "case", scale_config)
+        generate_case(root / str(n) / "2d" / "case", scale_config.to_2d())
 
 
 if __name__ == "__main__":

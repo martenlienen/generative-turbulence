@@ -26,8 +26,10 @@ def main():
     for inflow in np.linspace(0.5, 20.0, num=16):
         case_root = root / f"inflow-{inflow:.03f}"
         inflow_config = replace(base_config, inflow=inflow)
-        generate_case(case_root / "3d" / "data" / "high-step", inflow_config)
-        generate_case(case_root / "2d" / "data" / "high-step", inflow_config.to_2d())
+        generate_case(case_root / "3d" / "data" / "high-step" / "case", inflow_config)
+        generate_case(
+            case_root / "2d" / "data" / "high-step" / "case", inflow_config.to_2d()
+        )
 
 
 if __name__ == "__main__":

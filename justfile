@@ -10,4 +10,3 @@ postprocess case:
     scripts/grid-embedding.py {{case}}
     scripts/homogeneous-regions.py -k 64 --max-cluster-size 512 {{case}}
     scripts/mean-flow.py {{case}}
-    scripts/autocorrelation.py {{case}}

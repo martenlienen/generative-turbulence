@@ -25,10 +25,10 @@ def isfloat(s):
         return False
 
 
-def parallel_read(data_dir: Path, time_dirs: list[str], field_name: str, dtype: np.dtype):
+def parallel_read(case_dir: Path, time_dirs: list[str], field_name: str, dtype: np.dtype):
     def read_and_convert(time_dir: str):
         return ff.readfield(
-            data_dir, time_dir, field_name, verbose=False, precision=100
+            case_dir, time_dir, field_name, verbose=False, precision=100
         ).astype(dtype)
 
     return Parallel(return_as="generator")(
@@ -39,14 +39,14 @@ def parallel_read(data_dir: Path, time_dirs: list[str], field_name: str, dtype: 
 def stream_to_h5(
     data: h5.Group,
     name: str,
-    data_dir: Path,
+    case_dir: Path,
     time_dirs: list[str],
     compression: str | None,
 ):
     n_times = len(time_dirs)
     dataset = None
     for i, field in tqdm(
-        enumerate(parallel_read(data_dir, time_dirs, name, np.float32)),
+        enumerate(parallel_read(case_dir, time_dirs, name, np.float32)),
         total=n_times,
         desc=name,
     ):
@@ -72,13 +72,16 @@ def main():
     # Use "gzip" to save about 50% space but significantly slower writing and reading
     compression = args.compression
     data_dir = Path(args.data)
+
+    case_dir = data_dir / "case"
     assert data_dir.is_dir()
+    assert case_dir.is_dir()
 
     ###################################
     # Load OpenFOAM's polymesh format #
     ###################################
 
-    polymesh = data_dir / "constant" / "polyMesh"
+    polymesh = case_dir / "constant" / "polyMesh"
 
     points_file = ff.OpenFoamFile(polymesh, name="points", verbose=False)
     faces_file = ff.OpenFoamFile(polymesh, name="faces", verbose=False)
@@ -115,7 +118,7 @@ def main():
     #############################
 
     # Select the time directories and order them in ascending order
-    time_dirs = [d.name for d in data_dir.iterdir() if isfloat(d.name)]
+    time_dirs = [d.name for d in case_dir.iterdir() if isfloat(d.name)]
     time_dirs.sort(key=float)
 
     # Drop the first time directory because potentialFoam does not initialize the k and
@@ -130,7 +133,7 @@ def main():
 
     boundary_conditions = {}
     for var in ["p", "U", "k", "nut"]:
-        config = parse_openfoam_dict(data_dir / "initial-conditions" / var)
+        config = parse_openfoam_dict(case_dir / "initial-conditions" / var)
         bc = {}
         for name, desc in config.assignments["boundaryField"].items():
             if desc["type"] == "zeroGradient":
@@ -152,7 +155,7 @@ def main():
     # Read the physical parameters #
     ################################
 
-    config = parse_openfoam_dict(data_dir / "constant" / "physicalProperties")
+    config = parse_openfoam_dict(case_dir / "constant" / "physicalProperties")
     nu = config.assignments["nu"].value
 
     ######################
@@ -182,10 +185,10 @@ def main():
 
         # Stream the field data from OpenFOAM directly into the h5 file
         with parallel_backend("loky", n_jobs=-1):
-            stream_to_h5(data, "p", data_dir, time_dirs, compression)
-            stream_to_h5(data, "U", data_dir, time_dirs, compression)
-            stream_to_h5(data, "k", data_dir, time_dirs, compression)
-            stream_to_h5(data, "nut", data_dir, time_dirs, compression)
+            stream_to_h5(data, "p", case_dir, time_dirs, compression)
+            stream_to_h5(data, "U", case_dir, time_dirs, compression)
+            stream_to_h5(data, "k", case_dir, time_dirs, compression)
+            stream_to_h5(data, "nut", case_dir, time_dirs, compression)
 
 
 if __name__ == "__main__":

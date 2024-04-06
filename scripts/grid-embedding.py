@@ -27,7 +27,7 @@ def main():
         face2cell = np.array(f["domain/face2cell"])
         cells = np.array(f["domain/cells"])
 
-    mesh_params = json.loads((data_dir / "mesh-params.json").read_text())
+    mesh_params = json.loads((data_dir / "case" / "mesh-params.json").read_text())
     bounding_box = np.array(mesh_params["bounding_box"])
     unpadded_cell_counts = np.array(mesh_params["cell_counts"], dtype=int)
 

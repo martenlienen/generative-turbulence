@@ -218,7 +218,7 @@ def main():
             config = config.add_hole(x=offset, y=x, z=y, width=depth, depth=w, height=h)
         if scale is not None:
             config = config.refine(scale)
-        case_root = root / "data" / case.name
+        case_root = root / "data" / case.name / "case"
         generate_case(case_root, config)
         (case_root / "shape.json").write_text(json.dumps(asdict(case)))
         bar.update()

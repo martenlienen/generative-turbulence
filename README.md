@@ -41,9 +41,20 @@ pip install -e .
 
 ## Dataset
 
-Because of the size of the dataset, we are currently in the process of organizing online storage. As soon as the dataset is online, we will add instructions here on how to download and use it.
-
-In the meantime, you can generate your own data by following the steps in the next section.
+The shapes dataset is hosted at [TUM university library](https://mediatum.ub.tum.de/1737748). To download it, either follow the instructions on their page or execute the following steps. First, download the files.
+```sh
+# Download all archives to data/shapes/download
+scripts/download-dataset.sh
+```
+Note, that this can take a long time as the processed data is roughly 2TB. The script uses `rsync`, so you can resume partial downloads. If you also want to download the raw OpenFOAM case data, run instead
+```sh
+scripts/download-dataset.sh --with-raw
+```
+After downloading the invididual archives, you need to extract the files. The following script does so for you
+```sh
+scripts/extract-dataset.sh
+```
+Afterwards, you can start training the model as described below.
 
 ### Data generation with OpenFOAM in docker
 
@@ -70,12 +81,12 @@ just of-solve path/to/case
 ```
 or submit a whole bunch of them to your own SLURM cluster:
 ```sh
-./scripts/solve-slurm.py data/shapes/data/*
+./scripts/solve-slurm.py data/shapes/data/*/case
 ```
 
-Afterwards, apply the postprocessing, e.g. the HDF5 conversion, to each case
+Afterwards, apply the postprocessing, e.g. the HDF5 conversion, to each simulation, for example
 ```sh
-just postprocess path/to/case
+just postprocess data/shapes/data/2x2
 ```
 
 Finally, compute the training set statistics for feature normalization:
