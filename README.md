@@ -14,7 +14,7 @@ Besides the model, data loading and training code, this repository also contains
 - a script to [run simulations on a SLURM cluster](./scripts/solve-slurm.py) in a docker container via [udocker](https://github.com/indigo-dc/udocker),
 - a script to [convert OpenFOAM outputs into much more performant HDF5 files](./scripts/foam2h5.py),
 - and a script to [precompute an embedding of the sparse 3D data](./scripts/grid-embedding.py) into dense 3D tensors with padding layers to encode boundary information.
-Our [data loader](./turbdiff/data/ofles.py) lets you load all this information into easily digestible data classes.
+Our [data loader](./turbdiff/data/ofles.py) lets you load all this information into easily digestible data classes. To get started right away, copy and paste the 20 line snippet of code [further below](#loading-the-dataset-for-your-own-project) that loads the data into easy-to-work-with matrices.
 
 ## Installation
 
@@ -55,6 +55,89 @@ After downloading the invididual archives, you need to extract the files. The fo
 scripts/extract-dataset.sh
 ```
 Afterwards, you can start training the model as described below.
+
+### Loading the dataset for your own project
+
+The following snippet loads data from any of the `data.h5` files in the dataset for you to explore and experiment with.
+
+```python
+import numpy as np
+import h5py as h5
+
+def load_data(path, idx, features = ["u", "p"]):
+    """Load data from a data.h5 file into an easily digestible matrix format.
+
+    Arguments
+    ---------
+    path
+        Path to a data.h5 file in the `shapes` dataset
+    idx
+        Index or indices of sample to load. Can be a number, list, boolean mask or a slice.
+    features
+        Features to load. By default loads only velocity and pressure but you can also
+        access the LES specific k and nut variables.
+
+    Returns
+    -------
+    t: np.ndarray of shape T
+        Time steps of the loaded data frames
+    data_3d: np.ndarray of shape T x W x H x D x F
+        3D data with all features concatenated in the order that they are requested, i.e.
+        in the default case the first 3 features will be the velocity vector and the fourth
+        will be the pressure
+    inside_mask: np.ndarray of shape W x H x D
+        Boolean mask that marks the inside cells of the domain, i.e. cells that are not part
+        of walls, inlets or outlets
+    boundary_masks: dict of str to nd.ndarray of shape W x H x D
+        Masks that mark cells belonging to each type of boundary
+    boundary_values: dict[str, dict[str, np.ndarray]]
+        Prescribed values for variables and boundaries with Dirichlet boundary conditions
+    """
+
+    with h5.File(path, mode="r") as f:
+        t = np.array(f["data/times"])
+
+        cell_data = np.concatenate([np.atleast_3d(f["data"][name][idx]) for name in features], axis=-1)
+        padded_cell_counts = np.array(f["grid/cell_counts"])
+        cell_idx = np.array(f["grid/cell_idx"])
+
+        n_steps, n_features = cell_data.shape[0], cell_data.shape[-1]
+        data_3d = np.zeros((n_steps, *padded_cell_counts, n_features))
+        data_3d.reshape((n_steps, -1, n_features))[:, cell_idx] = cell_data
+
+        inside_mask = np.zeros(padded_cell_counts, dtype=bool)
+        inside_mask.reshape(-1)[cell_idx] = 1
+
+        boundary_masks = {name: np.zeros(padded_cell_counts, dtype=bool) for name in f["grid/boundaries"].keys()}
+        for name, mask in boundary_masks.items():
+            mask.reshape(-1)[np.array(f["grid/boundaries"][name])] = 1
+
+        boundary_values = {
+            ft: {
+                name: np.atleast_1d(desc["value"])
+                for name, desc in f["boundary-conditions"][ft].items()
+                if desc.attrs["type"] == "fixed-value"
+            }
+            for ft in features
+        }
+
+    return t, data_3d, inside_mask, boundary_masks, boundary_values
+```
+
+You can use it like
+
+```python
+from matplotlib.pyplot import matshow
+
+path = "data/shapes/data/2x2-large/data.h5"
+t, data_3d, inside_mask, boundary_masks, boundary_values = load_data(path, [50, 300])
+
+matshow(np.linalg.norm(data_3d[-1, :, :, 20, :3], axis=-1).T)
+```
+
+![](./figures/data-velocity-norm.png)
+
+The `data.h5` files contain more information than this snippet loads. To explore what else is available, poke around in our [data loader](./turbdiff/data/ofles.py).
 
 ### Data generation with OpenFOAM in docker
 
