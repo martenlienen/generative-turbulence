@@ -25,6 +25,7 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.trainer.connectors.signal_connector import _SignalConnector
 
+from turbdiff.callbacks import ConfigInCheckpoint
 from turbdiff.config import instantiate_data_and_task
 from turbdiff.plots import OpenFOAMPlots
 from turbdiff.time_limit import TimeLimit
@@ -109,6 +110,7 @@ def get_callbacks(config):
         TQDMProgressBar(refresh_rate=1),
         LearningRateMonitor(logging_interval="step"),
         OpenFOAMPlots(data_dir=Path(config.data.root) / "data"),
+        ConfigInCheckpoint(config),
     ]
     if monitor != {}:
         callbacks.append(WandbSummaries(**monitor))
