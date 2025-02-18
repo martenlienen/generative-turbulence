@@ -15,3 +15,7 @@ lightning_logs
 
 # brezn
 .brezn
+
+# pixi environments
+.pixi
+*.egg-info
