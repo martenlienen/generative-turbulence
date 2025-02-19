@@ -39,6 +39,9 @@ pip install -e .
 # before installing this package.
 ```
 
+Alternatively, you can use [pixi](https://pixi.sh) to quickly set up a working environment.
+After installing it with `curl -fsSL https://pixi.sh/install.sh | bash`, install and activate the environment at the same time with `pixi shell`.
+
 ## Dataset
 
 The shapes dataset is hosted at [TUM university library](https://mediatum.ub.tum.de/1737748). To download it, either follow the instructions on their page or execute the following steps. First, download the files.
