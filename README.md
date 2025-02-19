@@ -194,6 +194,16 @@ To re-run the experiments from the paper, execute
 ```
 which starts training with the settings in [`config/shapes_experiment.yaml`](./config/shapes_experiment.yaml). If you don't have a SLURM cluster available, remove the settings related to `launcher`.
 
+## Pretrained Checkpoint
+
+You can download a pretrained checkpoint from [zenodo](https://zenodo.org/records/14892192/files/turbdiff.ckpt) with `curl -O https://zenodo.org/records/14892192/files/turbdiff.ckpt`.
+To generate samples from it or any of your own checkpoints, run
+```sh
+scripts/eval_ckpt.py turbdiff.ckpt samples.h5 data.batch_size=256
+```
+The script lets you override any configuration values such as `data.batch_size` in the example above.
+`eval_ckpt.py` also serves as a great starting point for other types of evaluations.
+
 ## Citation
 
 If you build upon this work, please cite our paper as follows.
