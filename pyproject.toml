@@ -20,8 +20,9 @@ dependencies = [
 
   # OpenFOAM utilities
   "fluidfoam",
-  "ofblockmeshdicthelper",
+  "ofblockmeshdicthelper @ git+https://github.com/takaakiaoki/ofblockmeshdicthelper.git",
   "PyYAML",
+  "udocker",
 
   # Parser combinator for our own OpenFOAM dict parser
   "lark",
@@ -58,7 +59,7 @@ dependencies = [
   "ipympl",
   "pytimeparse",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 
 [project.optional-dependencies]
@@ -105,4 +106,5 @@ data = { features = ["data"], solve-group = "default" }
 [tool.pixi.tasks]
 
 [tool.pixi.dependencies]
-python = "==3.10.16"
+python = "==3.11.14"
+udocker = "*"
