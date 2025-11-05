@@ -225,7 +225,7 @@ def create_block(bmd: BlockMeshDict, name: str, ncells, offset, scale):
         bmd.add_vertex(*coords, f"{name}-{i}")
         for i, coords in enumerate(vertex_coordinates)
     ]
-    return bmd.add_hexblock([v.name for v in vertices], ncells, name)
+    return bmd.add_hexblock([v.name for v in vertices], ncells, name, "main")
 
 
 def main():
@@ -256,7 +256,7 @@ def main():
     two_dimensional = getattr(args, "2d")
     hx, hy, hz = args.H
     nx, ny, nz = args.n
-    holes = args.hole
+    holes = args.hole or []
     case_dir = Path(args.case)
 
     if two_dimensional:
