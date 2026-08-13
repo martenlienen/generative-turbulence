@@ -345,7 +345,8 @@ class OpenFOAMDataRepository:
 
     def read(self, file_idx: int, samples: list[int]):
         metadata = self.read_metadata(file_idx)
-        t = torch.tensor(self.times[file_idx][samples])
+        # float32 because MPS does not support float64 tensors
+        t = torch.tensor(self.times[file_idx][samples], dtype=torch.float32)
         data = self.read_data(file_idx, samples)
 
         return OpenFOAMData(metadata, t, data)
@@ -353,7 +354,9 @@ class OpenFOAMDataRepository:
     @cachedmethod(lambda self: self.metadata)
     def read_metadata(self, file_idx: int):
         with h5.File(self.files[file_idx], mode="r") as f:
-            bounding_box = torch.tensor(np.array(f["geometry/bounding_box"]))
+            bounding_box = torch.tensor(
+                np.array(f["geometry/bounding_box"]), dtype=torch.float32
+            )
             bb_cell_counts = torch.tensor(np.array(f["geometry/cell_counts"]))
             h = bounding_box / bb_cell_counts
 
@@ -482,7 +485,7 @@ class OpenFOAMDataset(Dataset):
 
 class OpenFOAMSampler(Sampler):
     def __init__(self, dataset: OpenFOAMDataset, *, batch_size: int, shuffle: bool):
-        super().__init__(dataset)
+        super().__init__()
 
         self.dataset = dataset
         self.batch_size = batch_size
@@ -515,7 +518,7 @@ class OpenFOAMEvaluationSampler(Sampler):
     def __init__(
         self, dataset: OpenFOAMDataset, *, batch_size: int, samples_per_file: int
     ):
-        super().__init__(dataset)
+        super().__init__()
 
         self.dataset = dataset
         self.batch_size = batch_size

@@ -40,7 +40,7 @@ def main():
     assert samples_path.suffix == ".h5"
     assert not samples_path.exists()
 
-    ckpt = torch.load(ckpt_path) if ckpt_path is not None else {}
+    ckpt = torch.load(ckpt_path, map_location="cpu") if ckpt_path is not None else {}
     if "config" in ckpt:
         log.info("Load config from checkpoint")
         run_config = OmegaConf.create(ckpt["config"])
@@ -71,7 +71,7 @@ def main():
 
             sample_store.add_samples(x_sample, batch.data.metadata)
 
-    metrics = task._sample_metrics("val", config.data.root).to(device)
+    metrics = task._sample_metrics("val", Path(config.data.root) / "data").to(device)
     stats = move_data_to_device(datamodule.stats, device)
     log_metrics = metrics.compute(sample_store, stats, device, expensive_metrics=False)
     log_metrics = {key: float(value.item()) for key, value in log_metrics.items()}
